@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stride - Driver Financial & Mileage Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen">
+
+    <div class="max-w-md mx-auto p-4 sm:p-6 pb-12">
+        <!-- Header & Pilih Kenderaan -->
+        <header class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <div class="logo-container">
+                    <svg class="w-9 h-9" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 6C24 6 20 8 16 12C12 16 10 20 12 24C14 28 19 30 24 28C27 27 30 24 31 20" stroke="url(#paint0_linear)" stroke-width="3.5" stroke-linecap="round"/>
+                        <path d="M12 30C12 30 16 28 20 24C24 20 26 16 24 12C22 8 17 6 12 8C9 9 6 12 5 16" stroke="url(#paint1_linear)" stroke-width="3.5" stroke-linecap="round"/>
+                        <circle cx="31" cy="20" r="2.5" fill="#10B981" />
+                        <circle cx="5" cy="16" r="2.5" fill="#3B82F6" />
+                        <defs>
+                            <linearGradient id="paint0_linear" x1="10" y1="6" x2="31" y2="28" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#3B82F6"/>
+                                <stop offset="1" stop-color="#10B981"/>
+                            </linearGradient>
+                            <linearGradient id="paint1_linear" x1="5" y1="8" x2="26" y2="30" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#10B981"/>
+                                <stop offset="1" stop-color="#3B82F6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-white">Stride</h1>
+                    <p class="text-xs text-gray-400">Kira pendapatan & kos harian</p>
+                </div>
+            </div>
+            <!-- Dropdown Pilih Kenderaan -->
+            <div>
+                <select id="vehicleSelect" onchange="changeActiveVehicle()" class="bg-gray-800 text-green-400 font-semibold text-xs px-3 py-2 rounded-xl border border-gray-700 focus:outline-none cursor-pointer">
+                    <!-- Dinamik melalui JS -->
+                </select>
+            </div>
+        </header>
+
+        <!-- Target Harian -->
+        <div class="tracker-card rounded-2xl p-5 shadow-sm mb-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Target Harian (RM)</span>
+                <span id="targetPercentage" class="text-xs font-bold text-green-500">0%</span>
+            </div>
+            <div class="flex justify-between items-baseline mb-2">
+                <span id="targetStatusText" onclick="editTarget()" class="text-sm font-medium text-gray-300 cursor-pointer hover:text-green-500 transition-colors">RM 0.00 / RM 200.00</span>
+            </div>
+            <div class="w-full bg-gray-700 h-3 rounded-full overflow-hidden mb-3">
+                <div id="progressBar" class="bg-green-500 h-full w-0 transition-all duration-500"></div>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 pt-2 border-t border-gray-700">
+                <button onclick="setQuickTarget(200)" class="target-btn bg-gray-900 hover:bg-green-500 hover:text-white text-gray-300 text-xs py-1.5 rounded-lg font-medium transition-colors cursor-pointer">RM200</button>
+                <button onclick="setQuickTarget(350)" class="target-btn bg-gray-900 hover:bg-green-500 hover:text-white text-gray-300 text-xs py-1.5 rounded-lg font-medium transition-colors cursor-pointer">RM350</button>
+                <button onclick="setQuickTarget(500)" class="target-btn bg-gray-900 hover:bg-green-500 hover:text-white text-gray-300 text-xs py-1.5 rounded-lg font-medium transition-colors cursor-pointer">RM500</button>
+                <button onclick="setQuickTarget(1000)" class="target-btn bg-gray-900 hover:bg-green-500 hover:text-white text-gray-300 text-xs py-1.5 rounded-lg font-medium transition-colors cursor-pointer">RM1000</button>
+            </div>
+        </div>
+
+        <!-- Target Mileage -->
+        <div class="tracker-card rounded-2xl p-5 shadow-sm mb-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Target Mileage Bulanan (KM)</span>
+                <span id="kmTargetPercentage" class="text-xs font-bold text-blue-500">0%</span>
+            </div>
+            <div class="flex justify-between items-baseline mb-2">
+                <span id="kmTargetStatusText" onclick="editKmTarget()" class="text-sm font-medium text-gray-300 cursor-pointer hover:text-blue-500 transition-colors">0 km / 2000 km</span>
+            </div>
+            <div class="w-full bg-gray-700 h-3 rounded-full overflow-hidden mb-3">
+                <div id="kmProgressBar" class="bg-blue-500 h-full w-0 transition-all duration-500"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-700">
+                <button onclick="setQuickKmTarget(2000)" class="km-target-btn bg-gray-900 hover:bg-blue-500 hover:text-white text-gray-300 text-xs py-1.5 rounded-lg font-medium transition-colors cursor-pointer">2000 KM</button>
+                <button onclick="setQuickKmTarget(5000)" class="km-target-btn bg-gray-900 hover:bg-blue-500 hover:text-white text-gray-300 text-xs py-1.5 rounded-lg font-medium transition-colors cursor-pointer">5000 KM</button>
+            </div>
+        </div>
+
+        <!-- Ringkasan Prestasi -->
+        <div class="tracker-card rounded-2xl p-5 shadow-sm mb-4">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-400">Ringkasan Prestasi</h2>
+                <input type="month" id="monthFilter" onchange="updateUI()" class="bg-gray-800 text-gray-200 text-xs px-2 py-1 rounded-lg border border-gray-700 focus:outline-none">
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-green-950/40 p-3 rounded-xl border border-green-900/50">
+                    <span class="text-xs text-green-400 font-medium">Pendapatan Kasar</span>
+                    <div id="summaryGross" class="text-xl font-bold text-green-300">RM 0.00</div>
+                </div>
+                <div class="bg-blue-950/40 p-3 rounded-xl border border-blue-900/50">
+                    <span class="text-xs text-blue-400 font-medium">Untung Bersih</span>
+                    <div id="summaryNet" class="text-xl font-bold text-blue-300">RM 0.00</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mb-4 bg-gray-900/40 p-2.5 rounded-xl text-xs">
+                <div>
+                    <span class="text-gray-400">Purata Untung/Hari:</span>
+                    <div id="avgProfitPerDay" class="font-semibold text-green-500">RM 0.00</div>
+                </div>
+                <div>
+                    <span class="text-gray-400">Purata KM/Hari:</span>
+                    <div id="avgKmPerDay" class="font-semibold text-blue-500">0.0 km</div>
+                </div>
+            </div>
+            <div class="text-xs text-gray-400 flex justify-between border-t border-gray-700 pt-3">
+                <span>Jumlah Kos: <strong id="summaryCost" class="text-red-500">RM 0.00</strong></span>
+                <span>Jumlah KM: <strong id="summaryKm" class="text-blue-500">0 km</strong></span>
+            </div>
+        </div>
+
+        <!-- Graf Analisis Kewangan & Mileage -->
+        <div class="tracker-card rounded-2xl p-5 shadow-sm mb-4">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-line text-green-500"></i> Analisis Graf Prestasi
+            </h2>
+            <div class="relative w-full h-48">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Borang Masukkan Rekod Baru -->
+        <div class="tracker-card rounded-2xl p-5 shadow-sm mb-4">
+            <h2 id="formTitle" class="text-sm font-semibold mb-4 flex items-center gap-2 text-white">
+                <i class="fa-solid fa-plus-circle text-green-500"></i> Tambah Rekod Harian
+            </h2>
+            <form id="trackerForm" class="space-y-4">
+                <input type="hidden" id="editRecordId">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Tarikh</label>
+                    <input type="date" id="inputDate" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">Pendapatan Kasar (RM)</label>
+                        <input type="number" step="0.01" id="inputGross" placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">Jumlah Trip</label>
+                        <input type="number" id="inputTrips" placeholder="0" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Jarak Perjalanan (KM)</label>
+                    <input type="number" step="0.1" id="inputKm" placeholder="Contoh: 120" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-gray-700">
+                    <div>
+                        <label class="block text-[11px] font-medium text-gray-400 mb-1">Minyak (RM)</label>
+                        <input type="number" step="0.01" id="inputPetrol" placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-gray-400 mb-1">Tol (RM)</label>
+                        <input type="number" step="0.01" id="inputToll" placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-gray-400 mb-1">Lain-lain (RM)</label>
+                        <input type="number" step="0.01" id="inputOther" placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Upload Gambar Resit (Optional)</label>
+                    <input type="file" id="inputReceipt" accept="image/*" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-1.5 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-gray-200 hover:file:bg-gray-700 cursor-pointer">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" id="submitBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-2.5 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                        Simpan Rekod
+                    </button>
+                    <button type="button" id="cancelEditBtn" onclick="resetForm()" class="hidden bg-gray-700 hover:bg-gray-600 text-white text-xs px-4 py-2.5 rounded-xl transition-colors cursor-pointer">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sejarah Rekod -->
+        <div class="tracker-card rounded-2xl p-5 shadow-sm mb-4">
+            <h2 class="text-sm font-semibold mb-3 flex items-center justify-between text-white">
+                <span><i class="fa-solid fa-clock-rotate-left text-green-500 mr-2"></i> Sejarah Rekod</span>
+                <button onclick="clearData()" class="text-xs text-red-500 hover:underline cursor-pointer">Padam Semua</button>
+            </h2>
+            <div id="historyList" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                <p class="text-xs text-gray-400 text-center py-4">Belum ada rekod disimpan.</p>
+            </div>
+        </div>
+
+        <!-- Kesihatan & Tabung Kereta -->
+        <div class="tracker-card rounded-2xl p-5 shadow-sm mb-4 border border-yellow-500/30">
+            <div class="mb-3">
+                <h2 class="text-xs font-semibold uppercase tracking-wider text-yellow-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-car-rear"></i> Kesihatan & Tabung Kereta
+                </h2>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div class="bg-yellow-950/30 p-3 rounded-xl border border-yellow-900/40">
+                    <span class="text-[11px] text-yellow-400 font-medium">Tabung Maintenance</span>
+                    <div id="maintenanceFundText" class="text-lg font-bold text-yellow-300">RM 0.00</div>
+                    <span class="text-[10px] text-gray-400">Auto-kira (RM0.05/km)</span>
+                </div>
+                <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+                    <span class="text-[11px] text-gray-400 font-medium">Odometer Semasa</span>
+                    <div id="currentOdometerText" class="text-lg font-bold text-white">0 km</div>
+                    <span id="nextServiceAlert" class="text-[10px] text-green-400">Minyak hitam: OK</span>
+                </div>
+            </div>
+
+            <!-- Tombol Urus Kereta & Set Odometer -->
+            <div class="grid grid-cols-2 gap-2 mb-2.5">
+                <button onclick="openVehicleModal()" class="w-full text-xs font-medium text-green-400 hover:text-white bg-gray-800 hover:bg-gray-700 py-2 rounded-xl border border-gray-700 cursor-pointer flex items-center justify-center gap-1.5 transition-colors shadow-sm" title="Urus Kenderaan">
+                    <i class="fa-solid fa-car"></i> Urus Kereta
+                </button>
+                <button onclick="editOdometerSettings()" class="w-full text-xs font-medium text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-700 py-2 rounded-xl border border-gray-700 cursor-pointer flex items-center justify-center gap-1.5 transition-colors shadow-sm" title="Tetapan Odometer">
+                    <i class="fa-solid fa-gear"></i> Set Odometer
+                </button>
+            </div>
+
+            <!-- Tombol Log Servis Baru -->
+            <button onclick="openServiceModal()" class="w-full bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-400 border border-yellow-600/40 text-xs py-2.5 rounded-xl font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5 mb-3 shadow-sm">
+                <i class="fa-solid fa-wrench"></i> Log Servis Baru
+            </button>
+
+            <!-- Sejarah Servis Kenderaan -->
+            <div class="border-t border-gray-800 pt-3">
+                <span class="text-[11px] font-semibold text-gray-400 block mb-2">Sejarah Servis Kenderaan</span>
+                <div id="serviceHistoryList" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    <p class="text-[11px] text-gray-500 text-center py-2">Belum ada rekod servis.</p>
+                </div>
+            </div>
+
+            <!-- Amaran Insurans, Roadtax & PUSPAKOM -->
+            <div class="border-t border-gray-800 pt-3 mt-3">
+                <span class="text-[11px] font-semibold text-gray-400 block mb-2">Status Dokumen & PUSPAKOM</span>
+                <div id="documentAlertsList" class="space-y-1.5 text-[11px]">
+                    <!-- Dinamik melalui JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Pengurusan Data -->
+        <div class="tracker-card rounded-2xl p-5 shadow-sm text-center">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">Pengurusan Data</h3>
+            
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <button onclick="exportJsonBackup()" class="w-full bg-transparent hover:bg-gray-800 text-xs text-blue-400 py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer border border-blue-900/60 transition-colors">
+                    <i class="fa-solid fa-download"></i> Export Backup (JSON)
+                </button>
+                
+                <label for="importFile" class="w-full bg-transparent hover:bg-gray-800 text-xs text-green-400 py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer border border-green-900/60 transition-colors">
+                    <i class="fa-solid fa-upload"></i> Import Backup (JSON)
+                </label>
+                <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+            </div>
+            
+            <div>
+                <button onclick="exportCsvData()" class="w-full bg-transparent hover:bg-gray-800 text-xs text-yellow-400 py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer border border-yellow-900/60 transition-colors">
+                    <i class="fa-solid fa-file-csv"></i> Muat Turun Laporan Excel (CSV)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Paparan Gambar Resit -->
+    <div id="receiptModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-900 border border-gray-700 rounded-2xl p-4 max-w-sm w-full text-center">
+            <h3 class="text-sm font-semibold text-white mb-3">Gambar Resit</h3>
+            <img id="modalReceiptImg" src="" alt="Resit" class="w-full max-h-80 object-contain rounded-xl mb-4 border border-gray-800">
+            <button onclick="closeReceiptModal()" class="bg-gray-800 hover:bg-gray-700 text-white text-xs px-4 py-2 rounded-xl w-full cursor-pointer">Tutup</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Pengurusan Kenderaan & Dokumen -->
+    <div id="vehicleModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-900 border border-gray-700 rounded-2xl p-5 max-w-sm w-full max-h-[90vh] overflow-y-auto">
+            <h3 class="text-sm font-semibold text-green-400 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-car"></i> Pengurusan Kenderaan & Dokumen
+            </h3>
+            
+            <form id="addVehicleForm" onsubmit="handleAddVehicle(event)" class="space-y-3 text-xs mb-4">
+                <div>
+                    <label class="block text-gray-400 mb-1">Brand Kenderaan</label>
+                    <select id="vehicleBrandInput" onchange="updateModelDropdown()" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none cursor-pointer" required>
+                        <!-- Dinamik melalui JS -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">Model Kenderaan</label>
+                    <select id="vehicleModelInput" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none cursor-pointer" required>
+                        <!-- Dinamik melalui JS -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">Kapasiti Enjin (CC)</label>
+                    <select id="vehicleCcInput" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none cursor-pointer" required>
+                        <option value="1.0L">1.0L</option>
+                        <option value="1.2L">1.2L</option>
+                        <option value="1.3L" selected>1.3L</option>
+                        <option value="1.5L">1.5L</option>
+                        <option value="1.6L">1.6L</option>
+                        <option value="1.8L">1.8L</option>
+                        <option value="2.0L">2.0L</option>
+                        <option value="2.4L">2.4L</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">Bacaan Odometer Permulaan (KM)</label>
+                    <input type="number" id="vehicleBaseOdoInput" placeholder="Contoh: 45000" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none" required>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] text-gray-400 mb-1">Tamat Insurans</label>
+                        <input type="date" id="vehicleInsuranceInput" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-2 py-2 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-gray-400 mb-1">Tamat Roadtax</label>
+                        <input type="date" id="vehicleRoadtaxInput" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-2 py-2 text-white focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">Tarikh Pemeriksaan PUSPAKOM</label>
+                    <input type="date" id="vehicleInspectionInput" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 rounded-xl text-xs cursor-pointer shadow-sm">
+                    + Simpan / Tambah Kenderaan
+                </button>
+            </form>
+
+            <div class="border-t border-gray-800 pt-3">
+                <span class="text-[11px] font-semibold text-gray-400 block mb-2">Padam Kenderaan Semasa</span>
+                <button onclick="deleteCurrentVehicle()" class="w-full bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-900/50 py-1.5 rounded-xl text-xs cursor-pointer">
+                    Padam Kenderaan Ini
+                </button>
+            </div>
+
+            <button onclick="closeVehicleModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-white text-xs py-2 rounded-xl mt-3 cursor-pointer">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Log Servis & Minyak Hitam -->
+    <div id="serviceModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-900 border border-gray-700 rounded-2xl p-5 max-w-sm w-full">
+            <h3 id="serviceModalTitle" class="text-sm font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-wrench"></i> Log Servis & Penyelenggaraan
+            </h3>
+            <form id="serviceForm" onsubmit="handleServiceSubmit(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="editServiceId">
+                <div>
+                    <label class="block text-gray-400 mb-1">Jenis Servis</label>
+                    <input type="text" id="serviceTypeInput" placeholder="Contoh: Tukar Minyak Hitam" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none" required>
+                    <div class="flex gap-1 mt-1.5 flex-wrap">
+                        <button type="button" onclick="setServiceType('Tukar Minyak Hitam')" class="bg-gray-800 hover:bg-gray-700 text-[10px] text-gray-300 px-2 py-0.5 rounded border border-gray-700 cursor-pointer">Minyak Hitam</button>
+                        <button type="button" onclick="setServiceType('Tukar Tayar')" class="bg-gray-800 hover:bg-gray-700 text-[10px] text-gray-300 px-2 py-0.5 rounded border border-gray-700 cursor-pointer">Tayar</button>
+                        <button type="button" onclick="setServiceType('Brake Pad')" class="bg-gray-800 hover:bg-gray-700 text-[10px] text-gray-300 px-2 py-0.5 rounded border border-gray-700 cursor-pointer">Brake Pad</button>
+                        <button type="button" onclick="setServiceType('Alignment & Balancing')" class="bg-gray-800 hover:bg-gray-700 text-[10px] text-gray-300 px-2 py-0.5 rounded border border-gray-700 cursor-pointer">Alignment</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">Bacaan Odometer (KM)</label>
+                    <input type="number" id="serviceOdometerInput" placeholder="Contoh: 50000" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">Kos Servis (RM)</label>
+                    <input type="number" step="0.01" id="serviceCostInput" placeholder="150.00" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">Upload Resit Servis (Optional)</label>
+                    <input type="file" id="serviceReceiptInput" accept="image/*" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-2 py-1 text-[11px] text-gray-300 file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-gray-700 file:text-white cursor-pointer">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" id="serviceSubmitBtn" class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-2 rounded-xl text-xs font-medium cursor-pointer">Simpan Servis</button>
+                    <button type="button" onclick="closeServiceModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl text-xs cursor-pointer">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
